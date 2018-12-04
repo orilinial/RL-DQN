@@ -20,7 +20,7 @@ def select_action(args, state, policy_net, steps_done, device):
                         args.eps_start * (1 - steps_done / args.eps_decay) + args.eps_end * (steps_done / args.eps_decay))
     if sample > eps_threshold:
         with torch.no_grad():
-            return policy_net(state.unsqueeze(0)).max(1)[1].view(1, 1)
+            return policy_net(state).max(1)[1].view(1, 1)
     else:
         return torch.tensor([[random.randrange(6)]], device=device, dtype=torch.long)
 
@@ -33,6 +33,20 @@ def optimize_model(args, policy_net, target_net, optimizer, memory, device):
     # Sample batch to learn from
     transitions = memory.sample(args.batch_size)
 
+    # Transpose the batch (see http://stackoverflow.com/a/19343/3343043 for
+    # detailed explanation).
+    batch = Transition(*zip(*transitions))
+
+    # Compute a mask of non-final states and concatenate the batch elements
+    non_final_mask = torch.tensor(tuple(map(lambda s: s is not None,
+                                            batch.next_state)), device=device, dtype=torch.uint8)
+    non_final_next_states = torch.cat([s for s in batch.next_state
+                                       if s is not None])
+    state_batch = torch.cat(batch.state, dim=0)
+    action_batch = torch.cat(batch.action, dim=0)
+    reward_batch = torch.cat(batch.reward, dim=0)
+
+    """
     state_batch = None
     action_batch = None
     next_state_batch = None
@@ -61,14 +75,17 @@ def optimize_model(args, policy_net, target_net, optimizer, memory, device):
                     next_state_batch = torch.cat((next_state_batch, transition.next_state.unsqueeze(0)), 0)
             else:
                 non_final_mask = torch.cat((non_final_mask, torch.tensor([[False]])))
+    """
 
     # Compute Q(s_t, a) - the model computes Q(s_t),
     # Then, using gather, we select the columns of actions taken
-    state_action_values = policy_net(state_batch).gather(1, action_batch.squeeze(-1))
+    state_action_values = policy_net(state_batch).gather(1, action_batch)
 
     # Compute V(s_{t+1}) for all next states.
     next_state_values = torch.zeros((args.batch_size, 1), device=device)
-    next_state_values[non_final_mask] = target_net(next_state_batch).max(1)[0].detach()
+    # next_state_values[non_final_mask] = target_net(next_state_batch).max(1)[0].detach()
+    # print(target_net(non_final_next_states).max(1)[0].detach())
+    next_state_values[non_final_mask] = target_net(non_final_next_states).max(1)[0].unsqueeze(1).detach()
 
     # Compute the expected Q values
     expected_state_action_values = (next_state_values * args.gamma) + reward_batch.float()
@@ -102,7 +119,7 @@ def main(args):
     # Create DQN models
     state = env.reset()
     state = args.encoder(state, states_num).to(device)
-    states_dim = state.size()[0]
+    states_dim = state.size()[1]
     policy_net = DQN(states_dim, args.hidden_dim, actions_num, dropout_rate=args.dropout).to(device)
     target_net = DQN(states_dim, args.hidden_dim, actions_num, dropout_rate=args.dropout).to(device)
 
@@ -132,7 +149,7 @@ def main(args):
             if done:
                 next_state = None
 
-            reward = torch.tensor([reward], device=device)
+            reward = torch.tensor([reward], device=device).unsqueeze(0)
 
             # Store the transition in memory
             if not(done and reward < 0):
@@ -202,5 +219,4 @@ if __name__ == '__main__':
         args.encoder = complex_encoder
     else:
         raise Exception('Please choose a valid encoder')
-    args = parser.parse_args()
     main(args)

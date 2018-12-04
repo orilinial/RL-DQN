@@ -19,7 +19,7 @@ def moving_average(data_set, periods=10):
 def one_hot(state, states_num):
     one_hot_vec = torch.zeros(states_num)
     one_hot_vec[state] = 1
-    return one_hot_vec
+    return one_hot_vec.unsqueeze(0)
 
 
 def decode(i):

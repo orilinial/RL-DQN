@@ -22,7 +22,7 @@ def eval_model(model, env, encoder, episodes=10, device='cpu'):
         while not done:
             # Select and perform an action
             steps += 1
-            action = model(state.unsqueeze(0)).max(1)[1].view(1, 1)
+            action = model(state).max(1)[1].view(1, 1)
             next_state, reward, done, _ = env.step(action.item())
             ep_reward += reward
             state = encoder(next_state, states_num).to(device)
