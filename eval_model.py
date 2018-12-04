@@ -2,6 +2,7 @@ from model import DQN
 import gym
 from utils import *
 from numpy import mean, std
+import argparse
 
 
 def eval_model(model, env, encoder, episodes=10, device='cpu'):
@@ -34,26 +35,36 @@ def eval_model(model, env, encoder, episodes=10, device='cpu'):
     return ep_reward_array
 
 
-def test():
+def test(args):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     env = gym.make('Taxi-v2')
     states_num = env.observation_space.n
     actions_num = env.action_space.n
-    encoder = complex_encoder
     state = env.reset()
-    state = encoder(state, states_num).to(device)
+    state = args.encoder(state, states_num).to(device)
     states_dim = state.size()[0]
 
     # Create Model
-    hidden_dim = 500
-    model = DQN(states_dim, hidden_dim, actions_num).to(device)
+    model = DQN(states_dim, args.hidden_dim, actions_num).to(device)
     model.load_state_dict(torch.load('current_model.pkl'))
-    reward_array = eval_model(model, env, encoder=encoder, episodes=100, device=device)
+    reward_array = eval_model(model, env, encoder=args.encoder, episodes=args.episodes, device=device)
     return reward_array
 
 
 if __name__ == '__main__':
-    reward_array = test()
+    parser = argparse.ArgumentParser(description=None)
+    parser.add_argument('--episodes', type=int, default=100,
+                        help='Number of epochs to run')
+    parser.add_argument('--encoder', type=str, default='one_hot')
+    parser.add_argument('--hidden_dim', type=int, default=50)
+    args = parser.parse_args()
+    if args.encoder == 'one_hot':
+        args.encoder = one_hot
+    elif args.encoder == 'complex_encoder':
+        args.encoder = complex_encoder
+    else:
+        raise Exception('Please choose a valid encoder')
+    reward_array = test(args)
     eval_std = std(reward_array)
     eval_mean = mean(reward_array)
     print("Test done. Reward mean = %d, reward std = %d" % (eval_mean, eval_std))
