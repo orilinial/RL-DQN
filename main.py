@@ -192,8 +192,15 @@ if __name__ == '__main__':
     parser.add_argument('--eps_end', type=float, default=0.1)
     parser.add_argument('--eps_decay', type=int, default=50000)
     parser.add_argument('--dropout', type=float, default=0)
-    parser.add_argument('--reg_param', type=float, default=0.0001)
-    parser.add_argument('--encoder', default=one_hot)
+    parser.add_argument('--reg_param', type=float, default=0)
+    parser.add_argument('--encoder', type=str, default='one_hot')
     parser.add_argument('--hidden_dim', type=int, default=50)
+    args = parser.parse_args()
+    if args.encoder == 'one_hot':
+        args.encoder = one_hot
+    elif args.encoder == 'complex_encoder':
+        args.encoder = complex_encoder
+    else:
+        raise Exception('Please choose a valid encoder')
     args = parser.parse_args()
     main(args)
