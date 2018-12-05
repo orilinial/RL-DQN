@@ -47,37 +47,6 @@ def optimize_model(args, policy_net, target_net, optimizer, memory, device):
     action_batch = torch.cat(batch.action, dim=0)
     reward_batch = torch.cat(batch.reward, dim=0)
 
-    """
-    state_batch = None
-    action_batch = None
-    next_state_batch = None
-    reward_batch = None
-    non_final_mask = None
-    for i, transition in enumerate(transitions):
-        if i == 0:
-            state_batch = transition.state.unsqueeze(0)
-            action_batch = transition.action.unsqueeze(0)
-            reward_batch = transition.reward.unsqueeze(0)
-            if transition.next_state is not None:
-                next_state_batch = transition.next_state.unsqueeze(0)
-                non_final_mask = torch.tensor([[True]])
-            else:
-                non_final_mask = torch.tensor([[False]])
-        else:
-            state_batch = torch.cat((state_batch, transition.state.unsqueeze(0)), 0)
-            action_batch = torch.cat((action_batch, transition.action.unsqueeze(0)), 0)
-            reward_batch = torch.cat((reward_batch, transition.reward.unsqueeze(0)), 0)
-
-            if transition.next_state is not None:
-                non_final_mask = torch.cat((non_final_mask, torch.tensor([[True]])))
-                if next_state_batch is None:
-                    next_state_batch = transition.next_state.unsqueeze(0)
-                else:
-                    next_state_batch = torch.cat((next_state_batch, transition.next_state.unsqueeze(0)), 0)
-            else:
-                non_final_mask = torch.cat((non_final_mask, torch.tensor([[False]])))
-    """
-
     # Compute Q(s_t, a) - the model computes Q(s_t),
     # Then, using gather, we select the columns of actions taken
     state_action_values = policy_net(state_batch).gather(1, action_batch)

@@ -51,12 +51,6 @@ def complex_encoder(state, state_num):
         passenger_on_taxi = 0
         target_loc_one_hot[passidx] = 1
 
-    # passenger_loc_one_hot = torch.zeros(5)
-    # passenger_loc_one_hot[passidx] = 1
-    # destination_loc_one_hot = torch.zeros(4)
-    # destination_loc_one_hot[destidx] = 1
-    # encoded_state = torch.cat((taxi_col_one_hot, taxi_row_one_hot, passenger_loc_one_hot, destination_loc_one_hot))
-
     passenger_on_taxi = torch.tensor([passenger_on_taxi]).float()
     encoded_state = torch.cat((taxi_col_one_hot, taxi_row_one_hot, target_loc_one_hot, passenger_on_taxi))
     return encoded_state.unsqueeze(0)
