@@ -42,7 +42,7 @@ def test(args):
     actions_num = env.action_space.n
     state = env.reset()
     state = args.encoder(state, states_num).to(device)
-    states_dim = state.size()[0]
+    states_dim = state.size()[1]
 
     # Create Model
     model = DQN(states_dim, args.hidden_dim, actions_num).to(device)
@@ -56,7 +56,7 @@ if __name__ == '__main__':
     parser.add_argument('--episodes', type=int, default=100,
                         help='Number of epochs to run')
     parser.add_argument('--encoder', type=str, default='one_hot')
-    parser.add_argument('--hidden_dim', type=int, default=50)
+    parser.add_argument('--hidden-dim', type=int, default=50)
     args = parser.parse_args()
     if args.encoder == 'one_hot':
         args.encoder = one_hot

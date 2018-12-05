@@ -59,7 +59,7 @@ def complex_encoder(state, state_num):
 
     passenger_on_taxi = torch.tensor([passenger_on_taxi]).float()
     encoded_state = torch.cat((taxi_col_one_hot, taxi_row_one_hot, target_loc_one_hot, passenger_on_taxi))
-    return encoded_state
+    return encoded_state.unsqueeze(0)
 
 
 Transition = namedtuple('Transition',

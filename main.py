@@ -205,13 +205,13 @@ if __name__ == '__main__':
                         help='Learning Rate for training')
     parser.add_argument('--target-update', type=int, default=500,
                         help='Number of steps until updating target network')
-    parser.add_argument('--eps_start', type=float, default=1.0)
-    parser.add_argument('--eps_end', type=float, default=0.1)
-    parser.add_argument('--eps_decay', type=int, default=50000)
+    parser.add_argument('--eps-start', type=float, default=1.0)
+    parser.add_argument('--eps-end', type=float, default=0.1)
+    parser.add_argument('--eps-decay', type=int, default=50000)
     parser.add_argument('--dropout', type=float, default=0)
-    parser.add_argument('--reg_param', type=float, default=0)
+    parser.add_argument('--reg-param', type=float, default=0)
     parser.add_argument('--encoder', type=str, default='one_hot')
-    parser.add_argument('--hidden_dim', type=int, default=50)
+    parser.add_argument('--hidden-dim', type=int, default=50)
     args = parser.parse_args()
     if args.encoder == 'one_hot':
         args.encoder = one_hot
