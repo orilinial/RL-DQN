@@ -1,24 +1,25 @@
 from utils import *
-import argparse
 from model import DQN
 import numpy as np
-import torch.nn as nn
 import torch.optim as optim
+import torch.nn as nn
 import torch
 import gym
-import random
 from itertools import count
 from eval_model import eval_model
 import matplotlib
+import time
+import argparse
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import time
 
 
-def select_action(args, state, policy_net, steps_done, device):
+def select_action_dqn(args, state, policy_net, steps_done, device):
     sample = random.random()
     eps_threshold = max(args.eps_end,
-                        args.eps_start * (1 - steps_done / args.eps_decay) + args.eps_end * (steps_done / args.eps_decay))
+                        args.eps_start * (1 - steps_done / args.eps_decay) + args.eps_end * (
+                        steps_done / args.eps_decay))
     if sample > eps_threshold:
         with torch.no_grad():
             return policy_net(state).max(1)[1].view(1, 1)
@@ -77,10 +78,9 @@ def optimize_model(args, policy_net, target_net, optimizer, memory, device):
     return loss.item()
 
 
-def main(args):
+def train_taxi_dqn(args):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     env = gym.make('Taxi-v2')
-    states_num = env.observation_space.n
     actions_num = env.action_space.n
     steps_done = 0
     episode_durations = []
@@ -88,7 +88,7 @@ def main(args):
 
     # Create DQN models
     state = env.reset()
-    state = args.encoder(state, states_num).to(device)
+    state = args.encoder(state).to(device)
     states_dim = state.size()[1]
     policy_net = DQN(states_dim, args.hidden_dim, actions_num, dropout_rate=args.dropout).to(device)
     target_net = DQN(states_dim, args.hidden_dim, actions_num, dropout_rate=args.dropout).to(device)
@@ -105,24 +105,24 @@ def main(args):
     for i_episode in range(args.episodes):
         # Initialize the environment and state
         state = env.reset()
-        state = args.encoder(state, states_num).to(device)
+        state = args.encoder(state).to(device)
         loss = None
         ep_reward = 0
 
         for t in count():
             # Select and perform an action
-            action = select_action(args, state, policy_net, steps_done, device)
+            action = select_action_dqn(args, state, policy_net, steps_done, device)
             next_state, reward, done, _ = env.step(action.item())
             steps_done += 1
             ep_reward += reward
-            next_state = args.encoder(next_state, states_num).to(device)
+            next_state = args.encoder(next_state).to(device)
             if done:
                 next_state = None
 
             reward = torch.tensor([reward], device=device).unsqueeze(0)
 
             # Store the transition in memory
-            if not(done and reward < 0):
+            if not (done and reward < 0):
                 memory.push(state, action, next_state, reward)
 
             # Move to the next state
@@ -143,7 +143,7 @@ def main(args):
             eval_reward_array.append(eval_mean_reward)
         print("Episode %d complete, episode duration = %d, loss = %.3f, reward = %d" %
               (i_episode, episode_durations[-1], loss, ep_reward))
-    
+
     np.save('eval_reward_array.npy', np.array(eval_reward_array))
     torch.save(policy_net.state_dict(), 'current_model.pkl')
     print('Complete')
@@ -167,9 +167,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=None)
     parser.add_argument('--batch-size', type=int, default=256,
                         help='Batch size to train on')
-    parser.add_argument('--episodes', type=int, default=1000,
+    parser.add_argument('--episodes', type=int, default=302,
                         help='Number of epochs to run')
-    parser.add_argument('--gamma', type=float, default=0.999,
+    parser.add_argument('--gamma', type=float, default=0.99,
                         help='Reward decay')
     parser.add_argument('--alpha', type=float, default=0.001,
                         help='Learning Rate for training')
@@ -178,7 +178,7 @@ if __name__ == '__main__':
     parser.add_argument('--eps-start', type=float, default=1.0)
     parser.add_argument('--eps-end', type=float, default=0.1)
     parser.add_argument('--eps-decay', type=int, default=50000)
-    parser.add_argument('--dropout', type=float, default=0)
+    parser.add_argument('--dropout', type=float, default=0.6)
     parser.add_argument('--reg-param', type=float, default=0)
     parser.add_argument('--encoder', type=str, default='one_hot')
     parser.add_argument('--hidden-dim', type=int, default=50)
@@ -190,5 +190,6 @@ if __name__ == '__main__':
     else:
         raise Exception('Please choose a valid encoder')
     start_time = time.time()
-    main(args)
+    train_taxi_dqn(args)
     print('Run finished successfully in %s seconds' % round(time.time() - start_time))
+

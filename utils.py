@@ -16,7 +16,8 @@ def moving_average(data_set, periods=10):
     return averaged
 
 
-def one_hot(state, states_num):
+def one_hot(state):
+    states_num = 500
     one_hot_vec = torch.zeros(states_num)
     one_hot_vec[state] = 1
     return one_hot_vec.unsqueeze(0)
@@ -35,7 +36,7 @@ def decode(i):
     return reversed(out)
 
 
-def complex_encoder(state, state_num):
+def complex_encoder(state):
     taxirow, taxicol, passidx, destidx = decode(state)
     # transfer taxi and target to one_hot:
     taxi_col_one_hot = torch.zeros(5)
