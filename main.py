@@ -12,6 +12,7 @@ from eval_model import eval_model
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import time
 
 
 def select_action(args, state, policy_net, steps_done, device):
@@ -219,4 +220,6 @@ if __name__ == '__main__':
         args.encoder = complex_encoder
     else:
         raise Exception('Please choose a valid encoder')
+    start_time = time.time()
     main(args)
+    print('Run finished successfully in %s seconds' % round(time.time() - start_time))
