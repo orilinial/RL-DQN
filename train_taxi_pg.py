@@ -56,6 +56,7 @@ def update_policy(args, policy_net, optimizer, reward_episode, ep_entropy, entro
 def train_taxi_pg(args):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     env = gym.make('Taxi-v2')
+    env = env.unwrapped
     actions_num = env.action_space.n
     episode_durations = []
 
@@ -107,7 +108,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=None)
     parser.add_argument('--episodes', type=int, default=10000)
     parser.add_argument('--gamma', type=float, default=0.99)
-    parser.add_argument('--alpha', type=float, default=0.001)
+    parser.add_argument('--alpha', type=float, default=0.01)
     parser.add_argument('--dropout', type=float, default=0)
     parser.add_argument('--entropy-start', type=float, default=10)
     parser.add_argument('--entropy-end', type=float, default=0)
