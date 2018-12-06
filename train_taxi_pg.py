@@ -121,7 +121,7 @@ def train_taxi_pg(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=None)
-    parser.add_argument('--episodes', type=int, default=10000)
+    parser.add_argument('--episodes', type=int, default=2000)
     parser.add_argument('--gamma', type=float, default=0.99)
     parser.add_argument('--alpha', type=float, default=0.01)
     parser.add_argument('--dropout', type=float, default=0)

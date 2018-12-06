@@ -14,7 +14,7 @@ def eval_model(model, env, encoder, episodes=10, device='cpu'):
     for i in range(episodes):
         # Initialize the environment and state
         state = env.reset()
-        state = encoder(state, states_num).to(device)
+        state = encoder(state).to(device)
         ep_reward = 0
         done = False
         steps = 0
@@ -25,7 +25,7 @@ def eval_model(model, env, encoder, episodes=10, device='cpu'):
             action = model(state).max(1)[1].view(1, 1)
             next_state, reward, done, _ = env.step(action.item())
             ep_reward += reward
-            state = encoder(next_state, states_num).to(device)
+            state = encoder(next_state).to(device)
 
         steps_done.append(steps)
         ep_reward_array.append(ep_reward)
