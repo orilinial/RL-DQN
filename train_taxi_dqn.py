@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch
 import gym
 from itertools import count
-from eval_model import eval_model
+from eval_taxi import eval_model
 import matplotlib
 import time
 import argparse
@@ -145,7 +145,7 @@ def train_taxi_dqn(args):
               (i_episode, episode_durations[-1], loss, ep_reward))
 
     np.save('eval_reward_array.npy', np.array(eval_reward_array))
-    torch.save(policy_net.state_dict(), 'current_model.pkl')
+    torch.save(policy_net.state_dict(), 'dqn_taxi_model.pkl')
     print('Complete')
     env.render()
     env.close()
@@ -159,7 +159,7 @@ def train_taxi_dqn(args):
     plt.title('Accumulated Reward Per Episode')
     plt.xlabel('Episode')
     plt.ylabel('Accumulated Reward')
-    plt.savefig('graphs/accumulated_reward.png', bbox_inches='tight')
+    plt.savefig('graphs/accumulated_reward_dqn.png', bbox_inches='tight')
     plt.close(1)
 
 
