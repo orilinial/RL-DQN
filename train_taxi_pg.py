@@ -106,17 +106,18 @@ def train_taxi_pg(args):
     env.render()
     env.close()
 
-    # Creating plots:
-    plt.figure(1)
-    # Accumulated reward plot
-    plt.plot(range(len(total_reward)), total_reward)
-    # On the same graph - rolling mean of accumulated reward
-    plt.plot(range(len(total_reward)), moving_average(total_reward))
-    plt.title('Accumulated Reward Per Episode')
-    plt.xlabel('Episode')
-    plt.ylabel('Accumulated Reward')
-    plt.savefig('graphs/accumulated_reward_pg.png', bbox_inches='tight')
-    plt.close(1)
+    if args.plot:
+        # Creating plots:
+        plt.figure(1)
+        # Accumulated reward plot
+        plt.plot(range(len(total_reward)), total_reward)
+        # On the same graph - rolling mean of accumulated reward
+        plt.plot(range(len(total_reward)), moving_average(total_reward))
+        plt.title('Accumulated Reward Per Episode')
+        plt.xlabel('Episode')
+        plt.ylabel('Accumulated Reward')
+        plt.savefig('graphs/accumulated_reward_pg.png', bbox_inches='tight')
+        plt.close(1)
 
 
 if __name__ == '__main__':
@@ -130,6 +131,8 @@ if __name__ == '__main__':
     parser.add_argument('--entropy-decay', type=int, default=1000000)
     parser.add_argument('--encoder', type=str, default='one_hot')
     parser.add_argument('--hidden-dim', type=int, default=50)
+    parser.add_argument('--plot', type=bool, default=False)
+
     args = parser.parse_args()
     if args.encoder == 'one_hot':
         args.encoder = one_hot

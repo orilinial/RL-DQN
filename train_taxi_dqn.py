@@ -151,16 +151,17 @@ def train_taxi_dqn(args):
     env.close()
 
     # Creating plots:
-    plt.figure(1)
-    # Accumulated reward plot
-    plt.plot(range(len(eval_reward_array)), eval_reward_array)
-    # On the same graph - rolling mean of accumulated reward
-    plt.plot(range(len(eval_reward_array)), moving_average(eval_reward_array))
-    plt.title('Accumulated Reward Per Episode')
-    plt.xlabel('Episode')
-    plt.ylabel('Accumulated Reward')
-    plt.savefig('graphs/accumulated_reward_dqn.png', bbox_inches='tight')
-    plt.close(1)
+    if args.plot:
+        plt.figure(1)
+        # Accumulated reward plot
+        plt.plot(range(len(eval_reward_array)), eval_reward_array)
+        # On the same graph - rolling mean of accumulated reward
+        plt.plot(range(len(eval_reward_array)), moving_average(eval_reward_array))
+        plt.title('Accumulated Reward Per Episode')
+        plt.xlabel('Episode')
+        plt.ylabel('Accumulated Reward')
+        plt.savefig('graphs/accumulated_reward_dqn.png', bbox_inches='tight')
+        plt.close(1)
 
 
 if __name__ == '__main__':
@@ -182,6 +183,7 @@ if __name__ == '__main__':
     parser.add_argument('--reg-param', type=float, default=0)
     parser.add_argument('--encoder', type=str, default='one_hot')
     parser.add_argument('--hidden-dim', type=int, default=50)
+    parser.add_argument('--plot', type=bool, default=False)
     args = parser.parse_args()
     if args.encoder == 'one_hot':
         args.encoder = one_hot
