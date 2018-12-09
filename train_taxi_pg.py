@@ -1,11 +1,10 @@
 from utils import *
-from model import Policy
+from model_taxi import Policy
 import numpy as np
 import torch.optim as optim
 import torch
 import gym
 from itertools import count
-from eval_taxi import eval_model
 import matplotlib
 from torch.distributions import Categorical
 matplotlib.use("Agg")
@@ -119,9 +118,10 @@ def train_taxi_pg(args):
     plt.savefig('graphs/accumulated_reward_pg.png', bbox_inches='tight')
     plt.close(1)
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=None)
-    parser.add_argument('--episodes', type=int, default=2000)
+    parser.add_argument('--episodes', type=int, default=10000)
     parser.add_argument('--gamma', type=float, default=0.99)
     parser.add_argument('--alpha', type=float, default=0.01)
     parser.add_argument('--dropout', type=float, default=0)

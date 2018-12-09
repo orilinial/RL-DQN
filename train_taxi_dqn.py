@@ -1,12 +1,12 @@
 from utils import *
-from model import DQN
+from model_taxi import DQN
 import numpy as np
 import torch.optim as optim
 import torch.nn as nn
 import torch
 import gym
 from itertools import count
-from eval_taxi import eval_model
+from eval_taxi_dqn import eval_model
 import matplotlib
 import time
 import argparse
@@ -167,7 +167,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=None)
     parser.add_argument('--batch-size', type=int, default=256,
                         help='Batch size to train on')
-    parser.add_argument('--episodes', type=int, default=302,
+    parser.add_argument('--episodes', type=int, default=1000,
                         help='Number of epochs to run')
     parser.add_argument('--gamma', type=float, default=0.99,
                         help='Reward decay')
@@ -178,7 +178,7 @@ if __name__ == '__main__':
     parser.add_argument('--eps-start', type=float, default=1.0)
     parser.add_argument('--eps-end', type=float, default=0.1)
     parser.add_argument('--eps-decay', type=int, default=50000)
-    parser.add_argument('--dropout', type=float, default=0.6)
+    parser.add_argument('--dropout', type=float, default=0)
     parser.add_argument('--reg-param', type=float, default=0)
     parser.add_argument('--encoder', type=str, default='one_hot')
     parser.add_argument('--hidden-dim', type=int, default=50)

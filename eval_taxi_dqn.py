@@ -1,13 +1,13 @@
-from model import DQN, Policy
+from model_taxi import DQN
 import gym
-from utils import *
+from utils import one_hot, complex_encoder
 from numpy import mean, std
 import argparse
+import torch
 
 
 def eval_model(model, env, encoder, episodes=10, device='cpu'):
     model.eval()
-    states_num = env.observation_space.n
     steps_done = []
     ep_reward_array = []
 
@@ -29,13 +29,14 @@ def eval_model(model, env, encoder, episodes=10, device='cpu'):
 
         steps_done.append(steps)
         ep_reward_array.append(ep_reward)
+
     print('Evaluation done, average steps done = %.1f, average accumulated reward = %.1f, std = %.1f'
           % (float(mean(steps_done)),  float(mean(ep_reward_array)), float(std(ep_reward_array))))
     model.train()
     return ep_reward_array
 
 
-def test(args, model):
+def test(args):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     env = gym.make('Taxi-v2')
     actions_num = env.action_space.n
@@ -44,10 +45,10 @@ def test(args, model):
     states_dim = state.size()[1]
 
     # Create Model
-    model = model(states_dim, args.hidden_dim, actions_num).to(device)
-    model.load_state_dict(torch.load(args.model + '_taxi_model.pkl'))
-    reward_array = eval_model(model, env, encoder=args.encoder, episodes=args.episodes, device=device)
-    return reward_array
+    model = DQN(states_dim, args.hidden_dim, actions_num).to(device)
+    model.load_state_dict(torch.load('dqn_taxi_model.pkl'))
+    eval_model(model, env, encoder=args.encoder, episodes=args.episodes, device=device)
+    return
 
 
 if __name__ == '__main__':
@@ -56,8 +57,6 @@ if __name__ == '__main__':
                         help='Number of epochs to run')
     parser.add_argument('--encoder', type=str, default='one_hot')
     parser.add_argument('--hidden-dim', type=int, default=50)
-    parser.add_argument('--model', type=str, default='pg',
-                        help='Which model to use (pg or dqn)')
     args = parser.parse_args()
 
     if args.encoder == 'one_hot':
@@ -67,12 +66,6 @@ if __name__ == '__main__':
     else:
         raise Exception('Please choose a valid encoder')
 
-    if args.model == 'pg':
-        model = Policy
-    elif args.model == 'dqn':
-        model = DQN
-    else:
-        raise Exception('Please choose a valid model (pg or dqn)')
-
-    reward_array = test(args, model)
+    print("Starting test on TAXI environment, with DQN method.")
+    test(args)
     print("Test done.")
