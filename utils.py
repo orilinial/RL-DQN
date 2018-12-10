@@ -2,6 +2,8 @@ import torch
 import numpy as np
 from collections import namedtuple
 import random
+import torchvision.transforms as T
+from PIL import Image
 
 
 def moving_average(data_set, periods=10):
@@ -79,6 +81,26 @@ class ReplayMemory(object):
 
     def __len__(self):
         return len(self.memory)
+
+
+transforms = T.Compose([T.ToPILImage(),
+                        T.Grayscale(),
+                        T.Resize(40, interpolation=Image.CUBIC),
+                        T.ToTensor()])
+
+
+def get_screen(env, device):
+    # transpose into torch order (CHW)
+    screen = env.render(mode='rgb_array').transpose(
+        (2, 0, 1))
+    # Convert to float, rescale, convert to torch tensor
+    # (this doesn't require a copy)
+    screen = np.ascontiguousarray(screen, dtype=np.uint8)
+    screen = torch.from_numpy(screen)
+
+    # Resize, and add a batch dimension (BCHW)
+    screen = 1 - transforms(screen).unsqueeze(0).to(device)
+    return screen
 
 
 if __name__ == '__main__':
