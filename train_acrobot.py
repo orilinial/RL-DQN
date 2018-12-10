@@ -9,7 +9,6 @@ import argparse
 from utils import get_screen
 import gym
 from eval_acrobot import eval_model
-from tqdm import trange
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -92,7 +91,7 @@ def train_acrobot(args):
     optimizer = optim.Adam(policy_net.parameters())
     memory = ReplayMemory(10000)
     success_memory = ReplayMemory(10000)
-    for i_episode in trange(args.episodes):
+    for i_episode in range(args.episodes):
         # Initialize the environment and state
         env.reset()
         ep_reward = 0
@@ -128,10 +127,13 @@ def train_acrobot(args):
                 for i in range(ep_range):
                     if memory.position - i < 0:
                         break
-                    # print("pos = " + str(memory.position))
-                    # print("i = "+str(i))
-                    # print(memory.memory[memory.position-i])
-                    c_state, c_action, c_next_state, c_reward = memory.memory[memory.position-i]
+                    try:
+                        c_state, c_action, c_next_state, c_reward = memory.memory[memory.position-i]
+                    except:
+                        print('Error occurred')
+                        print('memory.position = ' + str(memory.position))
+                        print('i = ' + str(i))
+                        raise
                     success_memory.push(c_state, c_action, c_next_state, c_reward)
 
             # Perform one step of the optimization (on the target network)
