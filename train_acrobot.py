@@ -125,10 +125,10 @@ def train_acrobot(args):
             if done and reward.item() == 0:
                 ep_range = min(t+1, 100)
                 for i in range(ep_range):
-                    if memory.position - i < 0:
+                    if memory.position-i-1 < 0:
                         break
                     try:
-                        c_state, c_action, c_next_state, c_reward = memory.memory[memory.position-i]
+                        c_state, c_action, c_next_state, c_reward = memory.memory[memory.position-1-i]
                     except:
                         print('Error occurred')
                         print('memory.position = ' + str(memory.position))
