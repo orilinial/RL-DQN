@@ -29,18 +29,32 @@ def select_action(args, state, policy_net, steps_done):
         return torch.tensor([[random.randrange(0, 3)]], device=device, dtype=torch.long)
 
 
-def optimize_model(args, policy_net, target_net, optimizer, memory, success_memory):
-    mem_batch_size = round(args.batch_size * 0.8)
-    succ_batch_size = args.batch_size - mem_batch_size
+def optimize_model(args, policy_net, target_net, optimizer, memory, success_memory, steps_done):
     if len(memory) < args.batch_size:
         return
 
-    if len(success_memory) < succ_batch_size:
+    # Sample batch from memory or success memory
+    sample = random.random()
+    success_threshold = max(args.success_ratio_end,
+                        args.success_ratio_start * (
+                        1 - steps_done / args.success_ratio_decay) + args.success_ratio_end
+                        * (steps_done / args.success_ratio_decay))
+
+    if (sample > success_threshold) or (len(success_memory) < args.batch_size):
         transitions = memory.sample(args.batch_size)
     else:
-        mem_transitions = memory.sample(mem_batch_size)
-        succ_transitions = success_memory.sample(succ_batch_size)
-        transitions = mem_transitions + succ_transitions
+        transitions = success_memory.sample(args.batch_size)
+
+
+    # mem_batch_size = round(args.batch_size * (1-success_ratio))
+    # succ_batch_size = args.batch_size - mem_batch_size
+    #
+    # if len(success_memory) < succ_batch_size:
+    #     transitions = memory.sample(args.batch_size)
+    # else:
+    #     mem_transitions = memory.sample(mem_batch_size)
+    #     succ_transitions = success_memory.sample(succ_batch_size)
+    #     transitions = mem_transitions + succ_transitions
 
     batch = Transition(*zip(*transitions))
 
@@ -56,9 +70,14 @@ def optimize_model(args, policy_net, target_net, optimizer, memory, success_memo
     # columns of actions taken
     state_action_values = policy_net(state_batch).gather(1, action_batch)
 
-    # Compute V(s_{t+1}) for all next states.
     next_state_values = torch.zeros(args.batch_size, device=device)
-    next_state_values[non_final_mask] = target_net(non_final_next_states).max(1)[0].detach()
+    # Compute V(s_{t+1}) for all next states.
+    with torch.no_grad():
+        if args.double_dqn:
+            next_actions = policy_net(non_final_next_states).max(1, keepdim=True)[1]
+            next_state_values[non_final_mask] = target_net(non_final_next_states).gather(1, next_actions).squeeze()
+        else:
+            next_state_values[non_final_mask] = target_net(non_final_next_states).max(1)[0]
     # Compute the expected Q values
     expected_state_action_values = (next_state_values * args.gamma) + reward_batch
 
@@ -75,7 +94,7 @@ def optimize_model(args, policy_net, target_net, optimizer, memory, success_memo
 
 
 def train_acrobot(args):
-    env = gym.make('Acrobot-v1')
+    env = gym.make('Acrobot-v1')#.unwrapped
     env.reset()
 
     steps_done = 0
@@ -89,8 +108,9 @@ def train_acrobot(args):
     target_net.eval()
 
     optimizer = optim.Adam(policy_net.parameters())
-    memory = ReplayMemory(10000)
-    success_memory = ReplayMemory(10000)
+    mem_size = 200000
+    memory = ReplayMemory(mem_size)
+    success_memory = ReplayMemory(round(mem_size*0.25))
     for i_episode in range(args.episodes):
         # Initialize the environment and state
         env.reset()
@@ -123,23 +143,18 @@ def train_acrobot(args):
 
             # Push to success memory
             if done and reward.item() == 0:
-                ep_range = min(t+1, 100)
+                ep_range = min(t+1, 200)
                 for i in range(ep_range):
                     if memory.position-i-1 < 0:
                         break
-                    try:
-                        c_state, c_action, c_next_state, c_reward = memory.memory[memory.position-1-i]
-                    except:
-                        print('Error occurred')
-                        print('memory.position = ' + str(memory.position))
-                        print('i = ' + str(i))
-                        raise
+                    c_state, c_action, c_next_state, c_reward = memory.memory[memory.position-1-i]
                     success_memory.push(c_state, c_action, c_next_state, c_reward)
 
             # Perform one step of the optimization (on the target network)
-            loss = optimize_model(args, policy_net, target_net, optimizer, memory, success_memory)
+            loss = optimize_model(args, policy_net, target_net, optimizer, memory, success_memory, steps_done)
 
-            if done:
+            # episode_stop = 999 if i_episode < 150 else 499
+            if done: # or t == episode_stop:
                 episode_durations.append(t + 1)
                 break
 
@@ -148,6 +163,7 @@ def train_acrobot(args):
         if i_episode % 20 == 0 and i_episode != 0:
             eval_res = eval_model(policy_net, env, episodes=1, device=device)
             eval_arr.append(eval_res)
+            torch.save(policy_net.state_dict(), 'acrobot_model_' + str(i_episode) + '.pkl')
 
         # Update the target network
         if steps_done % args.target_update == 0:
@@ -156,8 +172,8 @@ def train_acrobot(args):
         print("Episode %d complete, episode duration = %d, loss = %.3f, reward = %d" %
               (i_episode, episode_durations[-1], loss, ep_reward))
 
-    np.save('eval_arr.npy', np.array(eval_arr))
-    np.save('acrobot_reward_array.npy', np.array(reward_array))
+    np.save('acrobot_reward_eval.npy', np.array(eval_arr))
+    np.save('acrobot_reward_train.npy', np.array(reward_array))
     torch.save(policy_net.state_dict(), 'acrobot_model.pkl')
     print('Complete')
     env.render()
@@ -187,11 +203,16 @@ if __name__ == '__main__':
     parser.add_argument('--dropout', type=float, default=0)
     parser.add_argument('--states-dim', type=int, default=40)
     parser.add_argument('--eps-start', type=float, default=1.0)
-    parser.add_argument('--eps-end', type=float, default=0.1)
-    parser.add_argument('--eps-decay', type=int, default=50000)
-    parser.add_argument('--target-update', type=int, default=1500,
+    parser.add_argument('--eps-end', type=float, default=0.2)
+    parser.add_argument('--eps-decay', type=int, default=1000000)
+    parser.add_argument('--target-update', type=int, default=500,
                         help='Number of steps until updating target network')
     parser.add_argument('--plot', type=bool, default=True)
+    # parser.add_argument('--success-ratio', type=float, default=0.2)
+    parser.add_argument('--success-ratio-start', type=float, default=0.5)
+    parser.add_argument('--success-ratio-end', type=float, default=0.2)
+    parser.add_argument('--success-ratio-decay', type=int, default=1000000)
+    parser.add_argument('--double-dqn', type=bool, default=True)
 
     args = parser.parse_args()
 
