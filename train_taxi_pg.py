@@ -52,6 +52,7 @@ def update_policy(args, policy_net, optimizer, reward_episode, ep_entropy, entro
 
     return loss.item()
 
+
 def train_taxi_pg(args):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     env = gym.make('Taxi-v2')

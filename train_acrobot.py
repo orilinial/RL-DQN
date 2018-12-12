@@ -10,7 +10,7 @@ import gym
 from eval_acrobot import eval_model
 
 
-def select_action(args, state, policy_net, steps_done):
+def select_action(args, state, policy_net, steps_done, device):
     sample = random.random()
     eps_threshold = max(args.eps_end,
                         args.eps_start * (1 - steps_done / args.eps_decay) + args.eps_end * (
@@ -22,7 +22,7 @@ def select_action(args, state, policy_net, steps_done):
         return torch.tensor([[random.randrange(0, 3)]], device=device, dtype=torch.long)
 
 
-def optimize_model(args, policy_net, target_net, optimizer, memory, success_memory, steps_done):
+def optimize_model(args, policy_net, target_net, optimizer, memory, success_memory, steps_done, device):
     if len(memory) < args.batch_size:
         return
 
@@ -75,6 +75,7 @@ def optimize_model(args, policy_net, target_net, optimizer, memory, success_memo
 
 
 def train_acrobot(args):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     env = gym.make('Acrobot-v1')
     env.reset()
 
@@ -101,7 +102,7 @@ def train_acrobot(args):
         state = current_screen - last_screen
         for t in count():
             # Select and perform an action
-            action = select_action(args, state, policy_net, steps_done)
+            action = select_action(args, state, policy_net, steps_done, device)
             steps_done += 1
             _, reward, done, _ = env.step(action.item())
             ep_reward += reward
@@ -132,7 +133,7 @@ def train_acrobot(args):
                     success_memory.push(c_state, c_action, c_next_state, c_reward)
 
             # Perform one step of the optimization (on the target network)
-            loss = optimize_model(args, policy_net, target_net, optimizer, memory, success_memory, steps_done)
+            loss = optimize_model(args, policy_net, target_net, optimizer, memory, success_memory, steps_done, device)
 
             # Update the target network
             if steps_done % args.target_update == 0:
@@ -145,13 +146,13 @@ def train_acrobot(args):
 
         reward_array.append(ep_reward)
 
-        if i_episode % 20 == 0 and i_episode != 0:
-            eval_res = eval_model(policy_net, env, episodes=1, device=device)
-            eval_arr.append(eval_res)
-            torch.save(policy_net.state_dict(), 'acrobot_model_' + str(i_episode) + '.pkl')
-
         print("Episode %d complete, episode duration = %d, loss = %.3f, reward = %d" %
               (i_episode, episode_durations[-1], loss, ep_reward))
+
+        if i_episode % 20 == 0 and i_episode != 0:
+            eval_res = eval_model(policy_net, env, episodes=10, device=device)
+            eval_arr.append(eval_res)
+            torch.save(policy_net.state_dict(), 'acrobot_model_' + str(i_episode) + '.pkl')
 
     np.save('acrobot_reward_eval.npy', np.array(eval_arr))
     np.save('acrobot_reward_train.npy', np.array(reward_array))
