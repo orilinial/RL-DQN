@@ -3,18 +3,11 @@ from itertools import count
 from model_acrobot import DQN
 import torch.optim as optim
 import torch.nn.functional as F
-import matplotlib
 import time
 import argparse
 from utils import get_screen
 import gym
 from eval_acrobot import eval_model
-
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def select_action(args, state, policy_net, steps_done):
@@ -36,25 +29,13 @@ def optimize_model(args, policy_net, target_net, optimizer, memory, success_memo
     # Sample batch from memory or success memory
     sample = random.random()
     success_threshold = max(args.success_ratio_end,
-                        args.success_ratio_start * (
-                        1 - steps_done / args.success_ratio_decay) + args.success_ratio_end
-                        * (steps_done / args.success_ratio_decay))
+                            args.success_ratio_start * (1 - steps_done / args.success_ratio_decay) +
+                            args.success_ratio_end * (steps_done / args.success_ratio_decay))
 
     if (sample > success_threshold) or (len(success_memory) < args.batch_size):
         transitions = memory.sample(args.batch_size)
     else:
         transitions = success_memory.sample(args.batch_size)
-
-
-    # mem_batch_size = round(args.batch_size * (1-success_ratio))
-    # succ_batch_size = args.batch_size - mem_batch_size
-    #
-    # if len(success_memory) < succ_batch_size:
-    #     transitions = memory.sample(args.batch_size)
-    # else:
-    #     mem_transitions = memory.sample(mem_batch_size)
-    #     succ_transitions = success_memory.sample(succ_batch_size)
-    #     transitions = mem_transitions + succ_transitions
 
     batch = Transition(*zip(*transitions))
 
@@ -94,7 +75,7 @@ def optimize_model(args, policy_net, target_net, optimizer, memory, success_memo
 
 
 def train_acrobot(args):
-    env = gym.make('Acrobot-v1')#.unwrapped
+    env = gym.make('Acrobot-v1')
     env.reset()
 
     steps_done = 0
@@ -122,7 +103,7 @@ def train_acrobot(args):
             # Select and perform an action
             action = select_action(args, state, policy_net, steps_done)
             steps_done += 1
-            _, reward, done, _ = env.step(action.item()-1)
+            _, reward, done, _ = env.step(action.item())
             ep_reward += reward
             reward = torch.tensor([reward], device=device)
 
@@ -153,8 +134,12 @@ def train_acrobot(args):
             # Perform one step of the optimization (on the target network)
             loss = optimize_model(args, policy_net, target_net, optimizer, memory, success_memory, steps_done)
 
+            # Update the target network
+            if steps_done % args.target_update == 0:
+                target_net.load_state_dict(policy_net.state_dict())
+
             # episode_stop = 999 if i_episode < 150 else 499
-            if done: # or t == episode_stop:
+            if done:
                 episode_durations.append(t + 1)
                 break
 
@@ -165,10 +150,6 @@ def train_acrobot(args):
             eval_arr.append(eval_res)
             torch.save(policy_net.state_dict(), 'acrobot_model_' + str(i_episode) + '.pkl')
 
-        # Update the target network
-        if steps_done % args.target_update == 0:
-            target_net.load_state_dict(policy_net.state_dict())
-
         print("Episode %d complete, episode duration = %d, loss = %.3f, reward = %d" %
               (i_episode, episode_durations[-1], loss, ep_reward))
 
@@ -178,19 +159,6 @@ def train_acrobot(args):
     print('Complete')
     env.render()
     env.close()
-
-    # Creating plots:
-    if args.plot:
-        plt.figure(1)
-        # Accumulated reward plot
-        plt.plot(range(len(reward_array)), reward_array)
-        # On the same graph - rolling mean of accumulated reward
-        plt.plot(range(len(reward_array)), moving_average(reward_array))
-        plt.title('Accumulated Reward Per Episode')
-        plt.xlabel('Episode')
-        plt.ylabel('Accumulated Reward')
-        plt.savefig('graphs/accumulated_reward_dqn.png', bbox_inches='tight')
-        plt.close(1)
 
 
 if __name__ == '__main__':
@@ -207,8 +175,6 @@ if __name__ == '__main__':
     parser.add_argument('--eps-decay', type=int, default=1000000)
     parser.add_argument('--target-update', type=int, default=500,
                         help='Number of steps until updating target network')
-    parser.add_argument('--plot', type=bool, default=True)
-    # parser.add_argument('--success-ratio', type=float, default=0.2)
     parser.add_argument('--success-ratio-start', type=float, default=0.5)
     parser.add_argument('--success-ratio-end', type=float, default=0.2)
     parser.add_argument('--success-ratio-decay', type=int, default=1000000)

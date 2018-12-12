@@ -52,15 +52,16 @@ def test(args):
 
     # Create Model
     model = DQN().to(device)
-    model.load_state_dict(torch.load('acrobot_model.pkl'))
+    model.load_state_dict(torch.load(args.model))
     eval_model(model, env, episodes=args.episodes)
     return
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=None)
-    parser.add_argument('--episodes', type=int, default=100,
+    parser.add_argument('--episodes', type=int, default=10,
                         help='Number of epochs to run')
+    parser.add_argument('--model', type=str, default='acrobot_model.pkl')
     args = parser.parse_args()
 
     print("Starting test on ACROBOT environment, with DQN method.")
