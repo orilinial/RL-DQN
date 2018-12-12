@@ -25,7 +25,7 @@ def eval_model(model, env, episodes=1, device='cpu'):
             # Select and perform an action
             action = model(state).max(1)[1].view(1, 1)
             steps += 1
-            _, reward, done, _ = env.step(action.item()-1)
+            _, reward, done, _ = env.step(action.item())
             ep_reward += reward
 
             # Observe new state
