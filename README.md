@@ -40,6 +40,7 @@ Train: `acrobot_reward_train.npy` </br>
 The _test_ file holds the accumulated reward achieved for evaluation, when we ran evaluation every 20 training episodes. </br>
 The _train_ file holds the accumulated reward achieved for every train episode.</br>
 </br>
-The test file mentioned above, runs 10 episodes of evaluating the model. Example for the results:
+</br>
+### Example for acrobot results:
 ![alt text](acrobot.gif "Example of Acrobot results")
 
