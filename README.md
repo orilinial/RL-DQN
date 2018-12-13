@@ -1,8 +1,8 @@
-# RL-DQN
+# Deep RL - DQN and Policy Gradient
 This repository holds deep RL solutions for solving OpenAI's gym environments: TAXI and ACROBOT. </br>
 
 ###### Scripts Usage:
-All the files below have arguments which can be changed (but all set to the our choice of default parameters). </br>
+All the files below have arguments which can be changed (but all set by default to our choice of parameters). </br>
 To see all arguments for each script run: `<SCRIPT NAME>.py --help` </br>
 Example for running a script: `python train_taxi_dqn.py`
 
@@ -37,7 +37,9 @@ The model trained is `acrobot_model.pkl`, and the architecture is in `model_acro
 To see the accumulated reward graphs, use the data in:</br>
 Test: `acrobot_reward_eval.npy` </br>
 Train: `acrobot_reward_train.npy` </br>
-The _test_ file holds the accumulated reward achieved for evaluation, when we ran evaluation every 10 training episodes. </br>
-The _train_ file holds the accumulated reward achieved for every train episode.
-
+The _test_ file holds the accumulated reward achieved for evaluation, when we ran evaluation every 20 training episodes. </br>
+The _train_ file holds the accumulated reward achieved for every train episode.</br>
+</br>
+The test file mentioned above, runs 10 episodes of evaluating the model. Example for the results:
+![alt text](acrobot.gif "Example of Acrobot results")
 
