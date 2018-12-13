@@ -152,7 +152,6 @@ def train_acrobot(args):
         if i_episode % 20 == 0 and i_episode != 0:
             eval_res = eval_model(policy_net, env, episodes=10, device=device)
             eval_arr.append(np.mean(eval_res))
-            torch.save(policy_net.state_dict(), 'acrobot_model_' + str(i_episode) + '.pkl')
 
     np.save('acrobot_reward_eval.npy', np.array(eval_arr))
     np.save('acrobot_reward_train.npy', np.array(reward_array))
