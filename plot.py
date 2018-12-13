@@ -25,7 +25,7 @@ def plot(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=None)
-    parser.add_argument('--path', type=str, default='dqn_taxi_model.npy', help='Path of the numpy array to plot')
+    parser.add_argument('--path', type=str, default='eval_reward_dqn_taxi.npy', help='Path of the numpy array to plot')
     parser.add_argument('--save-fig', type=bool, default=False)
     parser.add_argument('--show-fig', type=bool, default=True)
     args = parser.parse_args()
