@@ -1,12 +1,13 @@
 from utils import moving_average
 import numpy as np
 import matplotlib
-matplotlib.use("Agg")
+import argparse
+matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 
 
-if __name__ == '__main__':
-    acrobot_reward_eval = np.load('acrobot_reward_train.npy')
+def plot(args):
+    acrobot_reward_eval = np.load(args.path)
     plt.figure(1)
     # Accumulated reward plot
     plt.plot(range(len(acrobot_reward_eval)), acrobot_reward_eval)
@@ -15,6 +16,17 @@ if __name__ == '__main__':
     plt.title('Accumulated Reward Per Episode')
     plt.xlabel('Episode')
     plt.ylabel('Accumulated Reward')
-    plt.savefig('graphs/accumulated_reward_eval.png', bbox_inches='tight')
-    plt.show()
+    if args.save_fig:
+        plt.savefig('accumulated_reward.png', bbox_inches='tight')
+    if args.show_fig:
+        plt.show()
     plt.close(1)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=None)
+    parser.add_argument('--path', type=str, default='dqn_taxi_model.npy', help='Path of the numpy array to plot')
+    parser.add_argument('--save-fig', type=bool, default=False)
+    parser.add_argument('--show-fig', type=bool, default=True)
+    args = parser.parse_args()
+    plot(args)

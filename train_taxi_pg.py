@@ -98,7 +98,7 @@ def train_taxi_pg(args):
         print("Episode %d complete, episode duration = %d, loss = %.3f, reward = %d" %
               (i_episode, episode_durations[-1], loss, total_ep_reward))
 
-    np.save('pg_reward_array.npy', np.array(total_reward))
+    np.save('eval_reward_pg_taxi.npy', np.array(total_reward))
     torch.save(policy_net.state_dict(), 'pg_taxi_model.pkl')
     print('Complete')
     env.render()

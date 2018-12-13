@@ -14,8 +14,8 @@ import argparse
 def select_action_dqn(args, state, policy_net, steps_done, device):
     sample = random.random()
     eps_threshold = max(args.eps_end,
-                        args.eps_start * (1 - steps_done / args.eps_decay) + args.eps_end * (
-                        steps_done / args.eps_decay))
+                        args.eps_start * (1 - steps_done / args.eps_decay) +
+                        args.eps_end * (steps_done / args.eps_decay))
     if sample > eps_threshold:
         with torch.no_grad():
             return policy_net(state).max(1)[1].view(1, 1)
@@ -137,7 +137,7 @@ def train_taxi_dqn(args):
         print("Episode %d complete, episode duration = %d, loss = %.3f, reward = %d" %
               (i_episode, episode_durations[-1], loss, ep_reward))
 
-    np.save('eval_reward_array.npy', np.array(eval_reward_array))
+    np.save('eval_reward_dqn_taxi.npy', np.array(eval_reward_array))
     torch.save(policy_net.state_dict(), 'dqn_taxi_model.pkl')
     print('Complete')
     env.render()
