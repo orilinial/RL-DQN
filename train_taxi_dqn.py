@@ -88,8 +88,6 @@ def train_taxi_dqn(args):
     policy_net = DQN(states_dim, args.hidden_dim, actions_num, dropout_rate=args.dropout).to(device)
     target_net = DQN(states_dim, args.hidden_dim, actions_num, dropout_rate=args.dropout).to(device)
 
-    print("Net created. number of params: {}".format(sum(param.numel() for param in policy_net.parameters())))
-
     # Create optimizer
     optimizer = optim.Adam(policy_net.parameters(), lr=args.alpha)
 

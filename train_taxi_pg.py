@@ -64,6 +64,7 @@ def train_taxi_pg(args):
     steps_done = 0
 
     policy_net = Policy(states_dim, args.hidden_dim, actions_num, dropout_rate=args.dropout).to(device)
+
     optimizer = optim.Adam(policy_net.parameters(), lr=args.alpha)
     for i_episode in range(args.episodes):
         state = env.reset()  # Reset environment and record the starting state
@@ -91,11 +92,11 @@ def train_taxi_pg(args):
                             args.entropy_end * (steps_done / args.entropy_decay))
 
         loss = update_policy(args, policy_net, optimizer, ep_reward, ep_entropy, entropy_coeff)
-        # total_ep_reward = int(sum(ep_reward))
-        total_reward.append(ep_reward)
+        total_ep_reward = int(sum(ep_reward))
+        total_reward.append(total_ep_reward)
 
         print("Episode %d complete, episode duration = %d, loss = %.3f, reward = %d entropy coeff = %.3f" %
-              (i_episode, episode_durations[-1], loss, ep_reward, entropy_coeff))
+              (i_episode, episode_durations[-1], loss, total_ep_reward, entropy_coeff))
 
     np.save('pg_reward_array.npy', np.array(total_reward))
     torch.save(policy_net.state_dict(), 'pg_taxi_model.pkl')
