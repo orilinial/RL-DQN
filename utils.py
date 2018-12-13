@@ -101,13 +101,3 @@ def get_screen(env, device):
     # Resize, and add a batch dimension (BCHW)
     screen = 1 - transforms(screen).unsqueeze(0).to(device)
     return screen
-
-
-if __name__ == '__main__':
-    import gym
-    env = gym.make('Taxi-v2')
-    state = env.reset()
-    encoder = other(state, 500)
-    print(encoder)
-    env.render()
-    env.close()

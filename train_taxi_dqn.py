@@ -7,12 +7,8 @@ import torch
 import gym
 from itertools import count
 from eval_taxi_dqn import eval_model
-import matplotlib
 import time
 import argparse
-
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 
 
 def select_action_dqn(args, state, policy_net, steps_done, device):
@@ -35,8 +31,7 @@ def optimize_model(args, policy_net, target_net, optimizer, memory, device):
     # Sample batch to learn from
     transitions = memory.sample(args.batch_size)
 
-    # Transpose the batch (see http://stackoverflow.com/a/19343/3343043 for
-    # detailed explanation).
+    # Transpose the batch
     batch = Transition(*zip(*transitions))
 
     # Compute a mask of non-final states and concatenate the batch elements
@@ -150,19 +145,6 @@ def train_taxi_dqn(args):
     env.render()
     env.close()
 
-    # Creating plots:
-    if args.plot:
-        plt.figure(1)
-        # Accumulated reward plot
-        plt.plot(range(len(eval_reward_array)), eval_reward_array)
-        # On the same graph - rolling mean of accumulated reward
-        plt.plot(range(len(eval_reward_array)), moving_average(eval_reward_array))
-        plt.title('Accumulated Reward Per Episode')
-        plt.xlabel('Episode')
-        plt.ylabel('Accumulated Reward')
-        plt.savefig('graphs/accumulated_reward_dqn.png', bbox_inches='tight')
-        plt.close(1)
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=None)
@@ -183,7 +165,6 @@ if __name__ == '__main__':
     parser.add_argument('--reg-param', type=float, default=0)
     parser.add_argument('--encoder', type=str, default='one_hot')
     parser.add_argument('--hidden-dim', type=int, default=50)
-    parser.add_argument('--plot', type=bool, default=False)
     args = parser.parse_args()
     if args.encoder == 'one_hot':
         args.encoder = one_hot

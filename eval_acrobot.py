@@ -52,7 +52,7 @@ def test(args):
 
     # Create Model
     model = DQN().to(device)
-    model.load_state_dict(torch.load(args.model))
+    model.load_state_dict(torch.load(args.model, map_location='cpu'))
     eval_model(model, env, episodes=args.episodes)
     return
 

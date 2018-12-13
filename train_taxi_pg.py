@@ -5,10 +5,7 @@ import torch.optim as optim
 import torch
 import gym
 from itertools import count
-import matplotlib
 from torch.distributions import Categorical
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 from torch.autograd import Variable
 import time
 import argparse
@@ -90,35 +87,21 @@ def train_taxi_pg(args):
             state = next_state
 
         entropy_coeff = max(args.entropy_end,
-                            args.entropy_start *
-                            (1 - steps_done / args.entropy_decay) + args.entropy_end * (
-                            steps_done / args.entropy_decay))
+                            args.entropy_start * (1 - steps_done / args.entropy_decay) +
+                            args.entropy_end * (steps_done / args.entropy_decay))
 
         loss = update_policy(args, policy_net, optimizer, ep_reward, ep_entropy, entropy_coeff)
-        total_ep_reward = int(sum(ep_reward))
-        total_reward.append(total_ep_reward)
+        # total_ep_reward = int(sum(ep_reward))
+        total_reward.append(ep_reward)
 
         print("Episode %d complete, episode duration = %d, loss = %.3f, reward = %d entropy coeff = %.3f" %
-              (i_episode, episode_durations[-1], loss, total_ep_reward, entropy_coeff))
+              (i_episode, episode_durations[-1], loss, ep_reward, entropy_coeff))
 
     np.save('pg_reward_array.npy', np.array(total_reward))
     torch.save(policy_net.state_dict(), 'pg_taxi_model.pkl')
     print('Complete')
     env.render()
     env.close()
-
-    if args.plot:
-        # Creating plots:
-        plt.figure(1)
-        # Accumulated reward plot
-        plt.plot(range(len(total_reward)), total_reward)
-        # On the same graph - rolling mean of accumulated reward
-        plt.plot(range(len(total_reward)), moving_average(total_reward))
-        plt.title('Accumulated Reward Per Episode')
-        plt.xlabel('Episode')
-        plt.ylabel('Accumulated Reward')
-        plt.savefig('graphs/accumulated_reward_pg.png', bbox_inches='tight')
-        plt.close(1)
 
 
 if __name__ == '__main__':
@@ -132,7 +115,6 @@ if __name__ == '__main__':
     parser.add_argument('--entropy-decay', type=int, default=1000000)
     parser.add_argument('--encoder', type=str, default='one_hot')
     parser.add_argument('--hidden-dim', type=int, default=50)
-    parser.add_argument('--plot', type=bool, default=False)
 
     args = parser.parse_args()
     if args.encoder == 'one_hot':

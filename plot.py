@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 
 if __name__ == '__main__':
-    acrobot_reward_eval = np.load('acrobot_reward_eval.npy').squeeze()
+    acrobot_reward_eval = np.load('acrobot_reward_train.npy')
     plt.figure(1)
     # Accumulated reward plot
     plt.plot(range(len(acrobot_reward_eval)), acrobot_reward_eval)
