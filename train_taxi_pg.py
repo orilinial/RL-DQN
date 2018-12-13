@@ -107,15 +107,19 @@ def train_taxi_pg(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=None)
-    parser.add_argument('--episodes', type=int, default=10000)
-    parser.add_argument('--gamma', type=float, default=0.99)
-    parser.add_argument('--alpha', type=float, default=0.01)
-    parser.add_argument('--dropout', type=float, default=0)
-    parser.add_argument('--entropy-start', type=float, default=10)
-    parser.add_argument('--entropy-end', type=float, default=0)
-    parser.add_argument('--entropy-decay', type=int, default=1000000)
-    parser.add_argument('--encoder', type=str, default='one_hot')
-    parser.add_argument('--hidden-dim', type=int, default=50)
+    parser.add_argument('--episodes', type=int, default=10000, help='Amount of train episodes to run')
+    parser.add_argument('--gamma', type=float, default=0.99, help='Gamma - discount factor')
+    parser.add_argument('--alpha', type=float, default=0.01, help='Alpha - Learning rate')
+    parser.add_argument('--dropout', type=float, default=0, help='Dropout rate')
+    parser.add_argument('--entropy-start', type=float, default=10,
+                        help='Start entropy - policy entropy added to loss')
+    parser.add_argument('--entropy-end', type=float, default=0,
+                        help='End entropy - policy entropy added to loss')
+    parser.add_argument('--entropy-decay', type=int, default=1000000,
+                        help='Entropy decay - policy entropy added to loss')
+    parser.add_argument('--encoder', type=str, default='one_hot', help='Which encoder to choose, '
+                                                                       'one_hot, or complex_encoder')
+    parser.add_argument('--hidden-dim', type=int, default=50, help='Hidden layer dimension')
 
     args = parser.parse_args()
     if args.encoder == 'one_hot':

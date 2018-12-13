@@ -53,9 +53,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=None)
     parser.add_argument('--episodes', type=int, default=100,
                         help='Number of epochs to run')
-    parser.add_argument('--hidden-dim', type=int, default=50)
-    parser.add_argument('--model', type=str, default='dqn',
-                        help='Which model to use (pg or dqn)')
+    parser.add_argument('--hidden-dim', type=int, default=50, help='Hidden layer dimension')
     args = parser.parse_args()
     print("Starting test on TAXI environment, with Policy Gradient method.")
     test(args)

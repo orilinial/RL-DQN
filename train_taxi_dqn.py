@@ -146,23 +146,21 @@ def train_taxi_dqn(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=None)
-    parser.add_argument('--batch-size', type=int, default=256,
-                        help='Batch size to train on')
-    parser.add_argument('--episodes', type=int, default=1000,
-                        help='Number of epochs to run')
-    parser.add_argument('--gamma', type=float, default=0.99,
-                        help='Reward decay')
-    parser.add_argument('--alpha', type=float, default=0.001,
-                        help='Learning Rate for training')
-    parser.add_argument('--target-update', type=int, default=500,
-                        help='Number of steps until updating target network')
-    parser.add_argument('--eps-start', type=float, default=1.0)
-    parser.add_argument('--eps-end', type=float, default=0.1)
-    parser.add_argument('--eps-decay', type=int, default=50000)
-    parser.add_argument('--dropout', type=float, default=0)
-    parser.add_argument('--reg-param', type=float, default=0)
-    parser.add_argument('--encoder', type=str, default='one_hot')
-    parser.add_argument('--hidden-dim', type=int, default=50)
+    parser.add_argument('--batch-size', type=int, default=256, help='Batch size to train on')
+    parser.add_argument('--episodes', type=int, default=1000, help='Amount of train episodes to run')
+    parser.add_argument('--gamma', type=float, default=0.99, help='Gamma - discount factor')
+    parser.add_argument('--alpha', type=float, default=0.001, help='Alpha - Learning rate')
+    parser.add_argument('--dropout', type=float, default=0, help='Dropout rate')
+    parser.add_argument('--hidden-dim', type=int, default=50, help='Dimension of the hidden layer')
+    parser.add_argument('--eps-start', type=float, default=1.0, help='Starting epsilon - in epsilon greedy method')
+    parser.add_argument('--eps-end', type=float, default=0.1,
+                        help='Final epsilon - in epsilon greedy method. When epsilon reaches this value it will stay')
+    parser.add_argument('--eps-decay', type=int, default=50000,
+                        help='Epsilon decay - how many steps until decaying to the final epsilon')
+    parser.add_argument('--target-update', type=int, default=500, help='Number of steps until updating target network')
+    parser.add_argument('--reg-param', type=float, default=0, help='L1 regulatization parameter')
+    parser.add_argument('--encoder', type=str, default='one_hot',
+                        help='Which encoder to choose, one_hot, or complex_encoder')
     args = parser.parse_args()
     if args.encoder == 'one_hot':
         args.encoder = one_hot

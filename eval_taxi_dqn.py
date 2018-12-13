@@ -54,9 +54,10 @@ def test(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=None)
     parser.add_argument('--episodes', type=int, default=100,
-                        help='Number of epochs to run')
-    parser.add_argument('--encoder', type=str, default='one_hot')
-    parser.add_argument('--hidden-dim', type=int, default=50)
+                        help='Number of episodes to run')
+    parser.add_argument('--encoder', type=str, default='one_hot',
+                        help='Which encoder to choose, one_hot, or complex_encoder')
+    parser.add_argument('--hidden-dim', type=int, default=50, help='Hidden layer dimension')
     args = parser.parse_args()
 
     if args.encoder == 'one_hot':

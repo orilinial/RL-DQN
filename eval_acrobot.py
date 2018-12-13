@@ -60,7 +60,7 @@ def test(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=None)
     parser.add_argument('--episodes', type=int, default=10,
-                        help='Number of epochs to run')
+                        help='Number of episodes to run')
     args = parser.parse_args()
 
     print("Starting test on ACROBOT environment, with DQN method.")

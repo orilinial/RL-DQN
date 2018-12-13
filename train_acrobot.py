@@ -163,26 +163,28 @@ def train_acrobot(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=None)
-    parser.add_argument('--batch-size', type=int, default=64,
-                        help='Batch size to train on')
-    parser.add_argument('--episodes', type=int, default=1000)
-    parser.add_argument('--gamma', type=float, default=0.99)
-    parser.add_argument('--alpha', type=float, default=0.001)
-    parser.add_argument('--dropout', type=float, default=0)
-    parser.add_argument('--states-dim', type=int, default=40)
-    parser.add_argument('--eps-start', type=float, default=1.0)
-    parser.add_argument('--eps-end', type=float, default=0.2)
-    parser.add_argument('--eps-decay', type=int, default=1000000)
-    parser.add_argument('--target-update', type=int, default=500,
-                        help='Number of steps until updating target network')
-    parser.add_argument('--success-ratio-start', type=float, default=0.5)
-    parser.add_argument('--success-ratio-end', type=float, default=0.2)
-    parser.add_argument('--success-ratio-decay', type=int, default=1000000)
-    parser.add_argument('--double-dqn', type=bool, default=True)
-
+    parser.add_argument('--batch-size', type=int, default=128, help='Batch size to train on')
+    parser.add_argument('--episodes', type=int, default=700, help='Amount of train episodes to run')
+    parser.add_argument('--gamma', type=float, default=0.99, help='Gamma - discount factor')
+    parser.add_argument('--alpha', type=float, default=0.00025, help='Alpha - Learning rate')
+    parser.add_argument('--dropout', type=float, default=0, help='Dropout rate')
+    parser.add_argument('--states-dim', type=int, default=40, help='Dimension of the input image layer')
+    parser.add_argument('--eps-start', type=float, default=1.0, help='Starting epsilon - in epsilon greedy method')
+    parser.add_argument('--eps-end', type=float, default=0.2,
+                        help='Final epsilon - in epsilon greedy method. When epsilon reaches this value it will stay')
+    parser.add_argument('--eps-decay', type=int, default=200000,
+                        help='Epsilon decay - how many steps until decaying to the final epsilon')
+    parser.add_argument('--target-update', type=int, default=500, help='Number of steps until updating target network')
+    parser.add_argument('--success-ratio-start', type=float, default=0.5,
+                        help='Starting Success ratio - probability to sample from the success experience memory')
+    parser.add_argument('--success-ratio-end', type=float, default=0.2,
+                        help='Final Success ratio - probability to sample from the success experience memory')
+    parser.add_argument('--success-ratio-decay', type=int, default=200000,
+                        help='Success ratio decay - '
+                             'how many steps until decaying to the final epsilon final success ratio')
+    parser.add_argument('--double-dqn', type=bool, default=True,  help='Run DQN with Double DQN ')
     args = parser.parse_args()
 
     start_time = time.time()
     train_acrobot(args)
     print('Run finished successfully in %s seconds' % round(time.time() - start_time))
-
